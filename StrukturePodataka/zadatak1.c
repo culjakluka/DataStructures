@@ -12,11 +12,13 @@ struct Student {
 int countStudents(char*, int*);
 int allocateMemory(student**, int);
 int readFromFile(char*, student*, int);
-int outputStudents(student*, int);
+int findMax(student*, int*, int);
+int outputStudents(student*, int, int);
 
 int main() {
 	student *st = NULL;
 	int numStud = 0;
+	int maxBod;
 
 	if (!countStudents("studenti.txt", &numStud)) {
 		printf("\ncountStudents error");
@@ -33,7 +35,12 @@ int main() {
 		return -1;
 	}
 
-	if (!outputStudents(st, numStud)) {
+	if (!findMax(st, &maxBod, numStud)) {
+		printf("\nfindMax error");
+		return -1;
+	}
+
+	if (!outputStudents(st, numStud, maxBod)) {
 		printf("\noutputStudent error");
 		return -1;
 	}
@@ -84,11 +91,24 @@ int readFromFile(char* fileName, student* stArr, int n) {
 	return 1;
 }
 
-int outputStudents(student* stArr, int n) {
+int findMax(student* stArr, int* max, int n) {
+	int i, tempMax;
+	tempMax = stArr[0].bodovi;
+
+	for (i = 1; i < n; i++) {
+		if (stArr[i].bodovi > tempMax) 
+			tempMax = stArr[i].bodovi;
+	}
+
+	*max = tempMax;
+	return 1;
+}
+
+int outputStudents(student* stArr, int n, int maxBod) {
 	int i;
 
 	for (i = 0; i < n; i++) {
-		printf("\n %s %s %d %d", stArr[i].ime, stArr[i].prezime, stArr[i].bodovi, (stArr[i].bodovi/100)*100);
+		printf("\n %s %s %d %f", stArr[i].ime, stArr[i].prezime, stArr[i].bodovi, ((float)(stArr[i].bodovi)/maxBod)*100);
 	}
 	return 1;
 }
