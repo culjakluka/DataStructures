@@ -1,16 +1,17 @@
+#define _CRT_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 
 typedef struct Student student;
 
 struct Student {
-	char ime[50];
-	char prezime[50];
-	int bodovi;
+	char name[50];
+	char surname[50];
+	int points;
 };
 
 int countStudents(char*, int*);
-int allocateMemory(student**, int);
+int allocateStudents(student**, int);
 int readFromFile(char*, student*, int);
 int findMax(student*, int*, int);
 int outputStudents(student*, int, int);
@@ -18,29 +19,34 @@ int outputStudents(student*, int, int);
 int main() {
 	student *st = NULL;
 	int numStud = 0;
-	int maxBod;
+	int maxPoints;
 
 	if (!countStudents("studenti.txt", &numStud)) {
 		printf("\ncountStudents error");
 		return -1;
 	}
 
-	if (!allocateMemory(&st, numStud)) {
-		printf("\nallocateMemory error");
+	st = (student*)malloc(numStud * sizeof(student));
+	if (!st) {
+		printf("malloc error\r\n");
 		return -1;
 	}
+	/*if (!allocateMemory(&st, numStud)) {
+		printf("\nallocateMemory error");
+		return -1;
+	}*/
 
 	if (!readFromFile("studenti.txt", st, numStud)) {
 		printf("\nreadFromFile error");
 		return -1;
 	}
 
-	if (!findMax(st, &maxBod, numStud)) {
+	if (!findMax(st, &maxPoints, numStud)) {
 		printf("\nfindMax error");
 		return -1;
 	}
 
-	if (!outputStudents(st, numStud, maxBod)) {
+	if (!outputStudents(st, numStud, maxPoints)) {
 		printf("\noutputStudent error");
 		return -1;
 	}
@@ -54,7 +60,7 @@ int countStudents(char* fileName,int *n) {
 	char c;
 	
 	if (!(fp = fopen(fileName, "r"))) {
-		perror(fp);
+		perror("The following error has occured");
 		return 0;
 	}
 	c = getc(fp);
@@ -68,8 +74,8 @@ int countStudents(char* fileName,int *n) {
 	return 1;
 }
 
-int allocateMemory(student** st, int numStud) {
-	*st = (student*)malloc(numStud * sizeof(student*));
+int allocateStudents(student** st, int numStud) { //This function sucks
+	*st = (student*)malloc(numStud * sizeof(student*)); 
 	if (st == NULL) return 0;
 	return 1;
 }
@@ -78,11 +84,11 @@ int readFromFile(char* fileName, student* stArr, int n) {
 	FILE* fp = NULL;
 
 	if (!(fp = fopen(fileName, "r"))) {
-		perror(fp);
+		perror("The following error has occured");
 		return 0;
 	}
 	for (int i = 0; i < n; i++) {
-		if (!fscanf(fp, "%s %s %d", stArr[i].ime, stArr[i].prezime, &stArr[i].bodovi)) {
+		if (!fscanf(fp, "%s %s %d", stArr[i].name, stArr[i].surname, &stArr[i].points)) {
 			printf("\nfscanf error");
 			return 0;
 		}
@@ -93,22 +99,22 @@ int readFromFile(char* fileName, student* stArr, int n) {
 
 int findMax(student* stArr, int* max, int n) {
 	int i, tempMax;
-	tempMax = stArr[0].bodovi;
+	tempMax = stArr[0].points;
 
 	for (i = 1; i < n; i++) {
-		if (stArr[i].bodovi > tempMax) 
-			tempMax = stArr[i].bodovi;
+		if (stArr[i].points > tempMax) 
+			tempMax = stArr[i].points;
 	}
 
 	*max = tempMax;
 	return 1;
 }
 
-int outputStudents(student* stArr, int n, int maxBod) {
+int outputStudents(student* stArr, int n, int maxPoints) {
 	int i;
 
 	for (i = 0; i < n; i++) {
-		printf("\n %s %s %d %f", stArr[i].ime, stArr[i].prezime, stArr[i].bodovi, ((float)(stArr[i].bodovi)/maxBod)*100);
+		printf("\n %s %s %d %f", stArr[i].name, stArr[i].surname, stArr[i].points, ((float)stArr[i].points/maxPoints)*100);
 	}
 	return 1;
 }
