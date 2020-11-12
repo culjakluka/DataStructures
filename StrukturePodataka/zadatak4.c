@@ -29,10 +29,10 @@ int main() {
 	head2.coef = 0;
 	head2.expo = 0;
 	r.next = NULL;
-	readFile("poly1.txt", &head1);
-	printList(&head1);
-	readFile("poly2.txt", &head2);
-	printList(&head2);
+	readFile("poly1.txt", head1.next);
+	printList(head1.next);
+	readFile("poly2.txt", head2.next);
+	printList(head2.next);
 	addPolynomials(head1.next, head2.next, &r);
 	printList(r.next);
 	return 0;
@@ -49,9 +49,9 @@ void addNode(Position head, Position what) {
 	Position p = head;
 	if (what->coef == 0)
 		return;
-//here
+	//here
 
-	while (p != NULL) {
+	while (NULL != p) {
 		if (what->expo < p->expo)
 			p = p->next;
 		else if (what->expo == p->expo) {
@@ -69,7 +69,7 @@ void addNode(Position head, Position what) {
 }
 void deleteNode(Position head, Position what) {
 	Position p = findPrevious(head, what);
-											//dovrsi
+	//dovrsi
 	if (NULL != p) {
 		puts("Deleted successfully");
 		p->next = what->next;				// provjerit jos 
@@ -78,7 +78,7 @@ void deleteNode(Position head, Position what) {
 }
 Position findPrevious(Position head, Position what) {
 	Position p = head;
-	while(!(p->next->expo == what->expo)){
+	while (!(p->next->expo == what->expo)) {
 		p = p->next;
 	}
 	return p;
@@ -103,7 +103,7 @@ void addPolynomials(Position p, Position q, Position r) {
 }
 void printList(Position head) {
 	Position p = head;
-	while (NULL != p->next) {
+	while (NULL != p) {
 		printf("\r\n%d*x^%d", p->coef, p->expo);
 		p = p->next;
 	}
@@ -114,6 +114,10 @@ void readFile(char* fileName, Position pos) {
 	int expo = 0;
 	FILE* fp = NULL;
 	fp = fopen(fileName, "r");
+	if (NULL == fp) {
+		printf("\r\nCouldn't open file");
+		return;
+	}
 	while (!feof(fp)) {
 		fscanf(fp, " %d %d", &coef, &expo);
 		addNode(pos, createNode(coef, expo));
