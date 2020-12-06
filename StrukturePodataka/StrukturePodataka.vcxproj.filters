@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="zadatak4.c">
+    <ClCompile Include="zadatak6b.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

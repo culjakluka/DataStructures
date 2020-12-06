@@ -4,7 +4,7 @@
 #include <time.h>
 #define RAND_MAX 100
 #define RAND_MIN 10
-
+ 
 struct stack;
 typedef struct stack Stack;
 typedef struct stack* Position;
@@ -16,7 +16,7 @@ struct stack {
 
 int RandomInt();
 void Push(Position);
-void Pull(Position);
+void Pop(Position);
 void PrintList(Position);
 
 int main() {
@@ -29,18 +29,20 @@ int main() {
 	Push(&head);
 	Push(&head);
 	Push(&head);
-	
+
 	PrintList(head.next);
 
-	Pull(&head);
-	Pull(&head);
-	Pull(&head);
+	Pop(&head);
+	Pop(&head);
+	Pop(&head);
+	Pop(&head);
+	Pop(&head);
 
 	return 0;
 }
 
 int RandomInt() {
-	return (rand()%(RAND_MAX - RAND_MIN+1)) + RAND_MIN;
+	return (rand() % (RAND_MAX - RAND_MIN + 1)) + RAND_MIN;
 }
 void Push(Position pos) {
 	Position el = NULL;
@@ -55,17 +57,18 @@ void Push(Position pos) {
 	pos->next = el;
 	printf("\r\nAdded %d to start of list.", el->x);
 }
-void Pull(Position pos) {
+void Pop(Position pos) {
 	if (NULL == pos->next) {
-		printf("Nema elemenata u listi");
+		printf("\r\nNema elemenata u listi");
 		return;
 	}
+	Position nextEl = pos->next;
 	printf("\r\nLast in first out: %d", pos->next->x);
 	pos->next = pos->next->next;
-	free(pos->next);
+	free(nextEl);
 }
-void PrintList(Position pos){
-	for (pos; pos->next != NULL;pos = pos->next) {
+void PrintList(Position pos) {
+	for (pos; pos != NULL; pos = pos->next) {
 		printf("\n\r%d", pos->x);
 	}
 }
