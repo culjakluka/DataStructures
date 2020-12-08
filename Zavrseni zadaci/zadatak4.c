@@ -16,6 +16,7 @@ struct poly {
 Position createNode(int coef, int expo);
 void SortedAddToList(Position head, Position what);
 void addPolynomials(Position p, Position q, Position r);
+void MultiplyPolynomials(Position p, Position q, Position s);
 void addNode(Position head, Position what);
 void printList(Position head);
 void deleteNode(Position head, Position what);
@@ -24,7 +25,7 @@ void readFile(char* fileName, Position pos);
 void AddToList(Position what, Position where);
 
 int main() {
-	Poly head1, head2, r;
+	Poly head1, head2, r, s;
 	head1.next = NULL;
 	head1.coef = 0;
 	head1.expo = 0;
@@ -34,6 +35,9 @@ int main() {
 	r.next = NULL;
 	r.coef = 0;
 	r.expo = 0;
+	s.next = NULL;
+	s.coef = 0;
+	s.expo = 0;
 
 	readFile("poly1.txt", &head1);
 	printList(head1.next);
@@ -42,7 +46,12 @@ int main() {
 	printList(head2.next);
 
 	addPolynomials(head1.next, head2.next, &r);
+	puts("Added: ");
 	printList(r.next);
+
+	MultiplyPolynomials(head1.next, head2.next, &s);
+	puts("Multiplied: ");
+	printList(s.next);
 
 	return 0;
 }
@@ -147,6 +156,15 @@ void addPolynomials(Position p, Position q, Position r) {
 			p = p->next;
 			q = q->next;
 			continue;
+		}
+	}
+}
+void MultiplyPolynomials(Position p, Position q, Position s) {
+	Position el = NULL;
+	for (p; p != NULL; p = p->next) {
+		for (q; q != NULL; q = q->next) {
+			el=createNode(p->coef*q->coef, p->expo + q->expo);
+			addNode(s, el);
 		}
 	}
 }
