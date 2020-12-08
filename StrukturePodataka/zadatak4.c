@@ -14,13 +14,15 @@ struct poly {
 };
 
 Position createNode(int coef, int expo);
-void createList(Position head, Position what);
+void SortedAddToList(Position head, Position what);
 void addPolynomials(Position p, Position q, Position r);
 void addNode(Position head, Position what);
 void printList(Position head);
 void deleteNode(Position head, Position what);
 Position findPrevious(Position head, Position what);
 void readFile(char* fileName, Position pos);
+void AddToList(Position what, Position where);
+
 int main() {
 	Poly head1, head2, r;
 	head1.next = NULL;
@@ -30,6 +32,8 @@ int main() {
 	head2.coef = 0;
 	head2.expo = 0;
 	r.next = NULL;
+	r.coef = 0;
+	r.expo = 0;
 
 	readFile("poly1.txt", &head1);
 	printList(head1.next);
@@ -53,41 +57,36 @@ Position createNode(int coef, int expo) {
 	el->next = NULL;
 	return el;
 }
-void createList(Position head, Position what) {
+void SortedAddToList(Position head, Position what) {
 	if (NULL == head->next) {
-		what->next = NULL;
-		head->next = what;
+		AddToList(what, head);
 		return;
 	}
 	head = head->next;
 	for (head; head != NULL; head = head->next) {
-		if (what->expo > head->expo) {
-			what->next = head->next;
-			head->next = what;
+		if (NULL == head->next) {
+			AddToList(what, head);
+			return;
+		}
+		if (head->expo == what->expo) {
+			head->coef += what->coef;
+			return;
+		}
+		if (head->expo < what->expo && what->expo < head->next->expo) {
+			AddToList(what,head);
+			return;
 		}
 	}
 }
+void AddToList(Position what, Position where) {
+	what->next = where->next;
+	where->next = what;
+}
 void addNode(Position head, Position what) {
-	Position p = head;
-	if (what->coef == 0)
-		return;
-
-	p = p->next;
-	if (NULL == p) {
-		what->next = NULL;
-		head->next = what;
+	while (head->next != NULL) {
+		head = head->next;
 	}
-	else 
-		for (p; p != NULL; p = p->next) {
-		/*if (p->expo == what->expo) {
-			p->coef += what->coef;
-			return;
-		}*/
-			 if ((what->expo > p->expo)) {
-				what->next = NULL;
-				p->next = what;
-			}
-		}
+	AddToList(what, head);
 }
 void deleteNode(Position head, Position what) {
 	Position p = findPrevious(head, what);
@@ -112,31 +111,49 @@ Position findPrevious(Position head, Position what) {
 }
 void addPolynomials(Position p, Position q, Position r) {
 	Position el = NULL;
-	while (NULL != p && NULL != q) {
+	while (!(NULL == p && NULL == q)) {
+		if (NULL == p) {
+			el = createNode(q->coef,q->expo);
+			addNode(r, el);
+			q = q->next;
+			continue;
+		}
+		if (NULL == q) {
+			el = createNode(p->coef, p->expo);
+			addNode(r, el);
+			p = p->next;
+			continue;
+		}
 		if (p->expo < q->expo) {
 			el = createNode(p->coef, p->expo);
 			addNode(r, el);
 			p = p->next;
+			continue;
 		}
 		else if (p->expo > q->expo) {
 			el = createNode(q->coef, q->expo);
-			addNode(r, q);
+			addNode(r, el);
 			q = q->next;
+			continue;
 		}
 		else if (p->expo == q->expo) {
-			if (p->coef + q->coef != 0) {
-				el = createNode(p->coef + q->coef, p->expo);
-				addNode(r, el);
+			if (p->coef + q->coef == 0) {
+				p = p->next;
+				q = q->next;
+				continue;
 			}
+			el = createNode(p->coef + q->coef, p->expo);
+			addNode(r, el);
 			p = p->next;
 			q = q->next;
+			continue;
 		}
 	}
 }
 void printList(Position head) {
 	Position p = head;
 	while (NULL != p) {
-		printf("\r\n%d*x^%d", p->coef, p->expo);
+		printf("\r\n%d * x^%d", p->coef, p->expo);
 		p = p->next;
 	}
 	printf("\n");
@@ -152,7 +169,7 @@ void readFile(char* fileName, Position pos) {
 	}
 	while (!feof(fp)) {
 		fscanf(fp, " %d %d", &coef, &expo);
-		createList(pos, createNode(coef, expo));
+		SortedAddToList(pos, createNode(coef, expo));
 	}
 	fclose(fp);
 }
