@@ -28,6 +28,8 @@ Position findLastElement(Position head);
 Position findPreviousElement(Position pos, char* lastName);
 Position findSmaller(Position pos, Position what);
 void deleteElement(Position pos, char* lastName);
+void listToFile(Position head);
+Position fileToList(Position head, char* fileName);
 
 int main(void) {
 	Node head;
@@ -40,6 +42,7 @@ int main(void) {
 		createSortedList(el, &head);
 	}
 	printList(head.next);
+	listToFile(&head);
 
 	printf("\r\nInsert the last name that you want to find: ");
 	scanf(" %s", lastName);
@@ -64,7 +67,6 @@ int main(void) {
 	scanf(" %s", &lastName);
 	insertBefore(&head, el, lastName);
 	printList(head.next);
-
 
 	return EXIT_SUCCESS;
 }
@@ -196,4 +198,36 @@ void deleteElement(Position pos, char* lastName) {
 		el->next = pos->next;
 		free(pos);
 	}
+}
+
+void listToFile(Position head) {
+	FILE* fp = NULL;
+	fp = fopen("students.txt", 'w');
+	if (NULL == fp) {
+		puts("\r\nFile opening failed!");
+		return;
+	}
+	head = head->next;
+	for (head; head != NULL; head = head->next) {
+		fprintf(fp, " %s %s %d\n", head->firstName, head->lastName, head->birthYear);
+	}
+}
+
+Position fileToList(Position head, char* fileName) {
+	char firstName[MAX_NAME] = { 0 };
+	char lastName[MAX_NAME] = { 0 };
+	int yearOfBirth = 0;
+	Position el = NULL;
+	FILE* fp = NULL;
+	fp = fopen(fileName, 'r');
+	if (NULL == fp) {
+		puts("\r\nFile opening failed!");
+		return;
+	}
+	while (!feof(fp)) {
+		fscanf(fp, " %s %s %d", firstName, lastName, yearOfBirth);
+		el = createStudent(firstName, lastName, yearOfBirth);
+		createSortedList(head, el);
+	}
+	return head;
 }
