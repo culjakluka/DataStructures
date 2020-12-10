@@ -17,16 +17,17 @@ struct _node {
 
 Position createPerson(Position pos);
 Position createStudent(char* firstName, char* lastName, int birthYear);
+Position createSortedList(Position el, Position pos);
 void insertAfter(Position where, Position what);
 void insertStart(Position head, Position what);
 void insertEnd(Position head, Position what);
-void insertBefore(Position head, Position what);
+void insertBefore(Position head, Position what, char* lastName);
 void printList(Position from);
 Position findElement(Position head);
 Position findLastElement(Position head);
-Position findPreviousElement(Position pos);
+Position findPreviousElement(Position pos, char* lastName);
 Position findSmaller(Position pos, Position what);
-void deleteElement(Position pos);
+void deleteElement(Position pos, char* lastName);
 
 int main(void) {
 	Node head;
@@ -34,24 +35,36 @@ int main(void) {
 	head.next = NULL;
 	char lastName[MAX_NAME];
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 2; i++) {
 		el = createPerson(&head);
+		createSortedList(el, &head);
 	}
+	printList(head.next);
 
-	el2 = findElement(&head);
-	printf("\r\n%s je trazeno prezime", el2->lastName);
+	printf("\r\nInsert the last name that you want to find: ");
+	scanf(" %s", lastName);
+	el2 = findElement(&head, lastName);
+	printf("\r\n%s %s %d je trazeni student.", el2->firstName, el2->lastName, el2->birthYear);
 
-	deleteElement(&head);
+	printf("\r\nInsert the last name that you want to delete: ");
+	scanf(" %s", lastName);
+	deleteElement(&head, lastName);
+	printList(head.next);
 
+	puts("\r\nPlease insert a person to add to the list(after an element).");
 	el = createPerson(&head);
-	printf("Please insert after which person to insert %s %s (surname)\n", el->firstName, el->lastName);
+	printf("\r\nPlease insert after which person to insert %s %s (surname)\n", el->firstName, el->lastName);
 	scanf(" %s", &lastName);
-	insertAfter(findElement(&head), el);
+	insertAfter(findElement(&head, lastName), el);
+	printList(head.next);
 
+	puts("\r\nPlease insert a person to add to the list(before an element).");
 	el = createPerson(&head);
-	printf("Please insert before which person to insert %s %s (last name)\n", el->firstName, el->lastName);
+	printf("\r\nPlease insert before which person to insert %s %s (last name)\n", el->firstName, el->lastName);
 	scanf(" %s", &lastName);
-	insertAfter(findPreviousElement(&head), el);
+	insertBefore(&head, el, lastName);
+	printList(head.next);
+
 
 	return EXIT_SUCCESS;
 }
@@ -62,7 +75,7 @@ Position createPerson(Position pos) {
 	int birthYear = 0;
 	Node* el = NULL;
 
-	printf("Please insert person\r\n");
+	printf("\r\nPlease insert person\r\n");
 	printf("First name:\t");
 	scanf(" %s", firstName);
 	printf("Last name:\t");
@@ -70,8 +83,6 @@ Position createPerson(Position pos) {
 	printf("Birthyear:\t");
 	scanf(" %d", &birthYear);
 	el = createStudent(firstName, lastName, birthYear);
-	insertAfter(findSmaller(pos, el), el);
-	printList(pos);
 
 	return el;
 }
@@ -88,33 +99,62 @@ Position createStudent(char* firstName, char* lastName, int birthYear) {
 	el->next = NULL;
 	return el;
 }
+Position createSortedList(Position el, Position head) {
+	Position pos = head;
+	if (NULL == el) {
+		puts("Element sent points to NULL!");
+		return;
+	}
+	if (NULL == pos->next) {
+		insertAfter(pos, el);
+		return;
+	}
+	pos = pos->next;
+	for (pos; pos != NULL; pos = pos->next) {
+		if (NULL == pos->next) {
+			if (strcmp(pos->lastName, el->lastName) > 0) {
+				insertAfter(findPreviousElement(head, pos->lastName), el);
+				return;
+			}
+			insertAfter(pos, el);
+			return;
+		}
+		if (strcmp(pos->lastName, el->lastName) == 0) {
+			insertAfter(pos, el);
+			return;
+		}
+		if (strcmp(pos->lastName, el->lastName) < 0 && strcmp(el->lastName, pos->next->lastName) < 0) {
+			insertAfter(pos, el);
+			return;
+		}
+	}
+}
 
 void insertAfter(Position where, Position what) {
 	what->next = where->next;
 	where->next = what;
 }
-
 void insertStart(Position head, Position what) {
 	insertAfter(head, what);
 }
 void insertEnd(Position head, Position what) {
 	insertAfter(findLastElement(head), what);
 }
-void insertBefore(Position head, Position what) {
-	insertAfter(findPreviousElement(head), what);
+void insertBefore(Position head, Position what, char* lastName) {
+	insertAfter(findPreviousElement(head, lastName), what);
 }
 
-void printList(Position head) {
-	Position p = head->next;
-	for (p = head->next; p != NULL; p = p->next)
-		printf("%s %s %d\r\n", p->firstName, p->lastName, p->birthYear);
+void printList(Position pos) {
+	if (NULL == pos) {
+		puts("Empty list!");
+		return;
+	}
+	puts("\r\nList: ");
+	for (pos; pos != NULL; pos = pos->next)
+		printf("\r\n%s %s %d", pos->firstName, pos->lastName, pos->birthYear);
 }
 
-Position findElement(Position head) {
-	char* lastName = NULL;
-	printf("Insert the last name that you want to find: ");
-	scanf(" %s", lastName);
-
+Position findElement(Position head, char* lastName) {
 	for (Position p = head->next; p != NULL; p = p->next)
 		if (!strcmp(lastName, p->lastName))
 			return p;
@@ -127,11 +167,7 @@ Position findLastElement(Position pos) {
 	}
 	return pos;
 }
-Position findPreviousElement(Position pos) {
-	char* lastName = NULL;
-	printf("Insert the last name that you want to find: ");
-	scanf(" %s", lastName);
-
+Position findPreviousElement(Position pos, char* lastName) {
 	while (pos->next != NULL && strcmp(pos->next->lastName, lastName)) {
 		pos = pos->next;
 	}
@@ -152,8 +188,8 @@ Position findSmaller(Position pos, Position what) {
 	}
 	return pos;
 }
-void deleteElement(Position pos) {
-	Position el = findPreviousElement(pos);
+void deleteElement(Position pos, char* lastName) {
+	Position el = findPreviousElement(pos, lastName);
 	if (NULL != el) {
 		printf("\r\nSuccesful deletion of element");
 		pos = el->next;
