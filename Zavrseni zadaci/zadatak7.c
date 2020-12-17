@@ -14,14 +14,17 @@ struct stack {
 void AddToList(Position, Position);
 void Push(Position, int);
 int Pop(Position);
-char* ReadFromFile(char* fileName);
+char* ReadFromFile(char*);
 float CalculatePostfix(char*, Position);
+float Operation(float, float);
 
 int main() {
 	Stack head;
 	head.next = NULL;
 	head.x = 0;
+	float x = CalculatePostfix("postfix.txt", &head);
 
+	printf("\r\n %f je rezultat postfix izraza!");
 	return 0;
 }
 
@@ -38,9 +41,8 @@ void Push(Position pos, int x) {
 	}
 	el->x = x;
 	AddToList(el, pos);
-	printf("\r\nAdded %d to list.");
+	printf("\r\nAdded %d to list.", el->x);
 }
-
 int Pop(Position pos) {
 	if (NULL == pos->next) {
 		puts("\r\nList is empty!");
@@ -56,39 +58,67 @@ char* ReadFromFile(char* fileName) {
 	char text[1000];
 	int i = 0;
 	FILE* fp = NULL;
-	fp = fopen(fileName, 'r');
+	fp = fopen(fileName, "r");
 	if(NULL==fp){
 		puts("\r\nFile load failure!");
 		return NULL;
 	}
-	while (feof(fp))
+	while (!feof(fp))
 		fgets(text, 1000, fp);
 	return text;
 }
+
 float CalculatePostfix(char* text, Position head) {
 	int x = 0;
 	int n = 0;
 	int num = 0;
 	char* buff = NULL;
 	char c;
+
 	buff = (char*)malloc(1000 * sizeof(char));
-	buff = text;
-	int n = 0;
-	if (sscanf(buff, "%d %n",&x, &n) != EOF){
-		Push(head, x);
-		buff += n;
+	if (NULL == buff) {
+		puts("Allocating error!");
+		return;
 	}
-	else {
-		sscanf(" %c",&c);
-		switch (c)
-		{
-		case '+':
-			while (Pop(head) != 0) {
-				num += Pop(head);
-			}
-		default:
-			break;
+	buff = ReadFromFile(text);
+	
+	while (sscanf(buff, "%d %n", &x, &n) != EOF) {
+		if (sscanf(buff, "%d %n",&x, &n) != EOF){
+			Push(head, x);
+			buff += n;
+		}
+		else {
+			sscanf(buff, " %c",&c);
+			Operation(num, c, head);
 		}
 	}
+	return num;
+}
+
+float Operation(float num, char c, Position head) {
+	float x = 0;
+	switch (c)
+	{
+	case '+':
+		while (x = Pop(head) != 0) {
+			num += x;
+		}
+		break;
+	case '-':
+		while (x = Pop(head) != 0) {
+			num -= x;
+		}
+	case '*':
+		if (num == 0) {
+			num = 1;
+		}
+		while (x = Pop(head) != 0) {
+			num = num * x;
+		}
+	default:
+		break;
+	}
+
+	return num;
 }
 
