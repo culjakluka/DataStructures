@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct stack;
 typedef struct stack Stack;
@@ -16,7 +17,7 @@ void Push(Position, int);
 int Pop(Position);
 char* ReadFromFile(char*);
 float CalculatePostfix(char*, Position);
-float Operation(float, float);
+void Operation(float* , char, Position);
 
 int main() {
 	Stack head;
@@ -24,7 +25,7 @@ int main() {
 	head.x = 0;
 	float x = CalculatePostfix("postfix.txt", &head);
 
-	printf("\r\n %f je rezultat postfix izraza!");
+	printf("\r\n %f je rezultat postfix izraza!", x);
 	return 0;
 }
 
@@ -32,6 +33,7 @@ void AddToList(Position what, Position where) {
 	what->next = where->next;
 	where->next = what;
 }
+
 void Push(Position pos, int x) {
 	Position el = NULL;
 	el = (Position)malloc(sizeof(Stack));
@@ -43,6 +45,7 @@ void Push(Position pos, int x) {
 	AddToList(el, pos);
 	printf("\r\nAdded %d to list.", el->x);
 }
+
 int Pop(Position pos) {
 	if (NULL == pos->next) {
 		puts("\r\nList is empty!");
@@ -72,53 +75,56 @@ float CalculatePostfix(char* text, Position head) {
 	int x = 0;
 	int n = 0;
 	int num = 0;
+	int counter = 0;
 	char* buff = NULL;
 	char c;
+	int textLength = (unsigned)strlen(ReadFromFile(text));
 
-	buff = (char*)malloc(1000 * sizeof(char));
+	buff = (char*)malloc(textLength * sizeof(char));
 	if (NULL == buff) {
 		puts("Allocating error!");
-		return;
+		return 0;
 	}
 	buff = ReadFromFile(text);
+
 	
-	while (sscanf(buff, "%d %n", &x, &n) != EOF) {
+	while (counter != textLength) {
 		if (sscanf(buff, "%d %n",&x, &n) != EOF){
 			Push(head, x);
 			buff += n;
+			counter += n;
 		}
 		else {
-			sscanf(buff, " %c",&c);
-			Operation(num, c, head);
+			sscanf(buff, " %c %n",&c, &n);
+			Operation(&num, c, head);
+			buff += n;
+			counter += n;
 		}
 	}
 	return num;
 }
 
-float Operation(float num, char c, Position head) {
+void Operation(float* num, char c, Position head) {
 	float x = 0;
 	switch (c)
 	{
 	case '+':
-		while (x = Pop(head) != 0) {
-			num += x;
+		while (x = (float)Pop(head) != 0) {
+			*num += x;
 		}
 		break;
 	case '-':
-		while (x = Pop(head) != 0) {
-			num -= x;
+		while (x = (float)Pop(head) != 0) {
+			*num -= x;
 		}
 	case '*':
 		if (num == 0) {
-			num = 1;
+			*num = 1;
 		}
-		while (x = Pop(head) != 0) {
-			num = num * x;
+		while (x = (float)Pop(head) != 0) {
+			*num = *num * x;
 		}
 	default:
 		break;
 	}
-
-	return num;
 }
-
