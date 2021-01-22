@@ -21,6 +21,8 @@ int CalculateHashIndex(char*);
 Position CreateNode();
 int RandomNumber();
 char* Input(char*);
+void CreateSortedList(Position, Position);
+Position Previous(Position);
 
 int main() {
 	Position hashTable = NULL;
@@ -75,4 +77,36 @@ char* Input(char* message) {
 	printf("%s", message);
 	scanf("%s", userInput);
 	return userInput;
+}
+
+void CreateSortedList(Position what, Position where) {
+	Position p = where;
+	if (NULL == what) {
+		puts("Element empty!");
+		return;
+	}
+	if (NULL == where) {
+		AddToList(what, where);
+		return;
+	}
+	while (where->next != NULL) {
+		where = where->next;
+		if (strcmp(where->surname, what->surname) > 0) {
+			AddToList(what, Previous(p, where));
+			return;
+		} 
+		//TUSIBURAZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+	}
+}
+
+void AddToList(Position what, Position where) {
+	what->next = where->next;
+	where->next = what;
+}
+
+Position Previous(Position head, Position what) {
+	while (head->next != what) {
+		head = head->next;
+	}
+	return head;
 }
