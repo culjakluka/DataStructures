@@ -232,7 +232,7 @@ char* ReadFromFile(char* filename) {
 		strcpy(buff, temp);
 	}
 	while (fgets(temp, 100, fp)) {
-		strcat(buff, temp); //TUSIBURAZ
+		strcat(buff, temp);
 	}
 	return buff;
 }
