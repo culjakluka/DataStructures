@@ -18,7 +18,7 @@ struct list {
 };
 
 int CalculateHashIndex(char*);
-Position CreateNode();
+Position CreateNode(char*, char*);
 int RandomNumber();
 char* Input(char*);
 void CreateSortedList(Position, Position);
@@ -26,31 +26,55 @@ void AddToList(Position, Position);
 Position Previous(Position, Position);
 void CreateHashTable(Position, char*);
 char* ReadFromFile(char*);
-Position FromTextToPerson(char*, int*);
+Position FromTextToPerson(char*, int*, int*);
+void PrintList(Position, int);
+void PrintId(Position);
+void PrintIdPersonFromList(Position, int, char*, char*);
 
 int main() {
 	Position hashTable = NULL;
+	int choice = 0;
 	hashTable = (Position)malloc(11 * sizeof(List));
-
+	if (NULL == hashTable) {
+		puts("hashTable allocation failed!");
+		return EXIT_FAILURE;
+	}
 	srand((unsigned)time(NULL));
 	
 	for (int i = 0; i != 11; i++) {
 		strcpy(hashTable[i].name, "");
 		strcpy(hashTable[i].surname, "");
+		hashTable[i].id = i;
 		hashTable[i].next = NULL;
 	}
 
 	CreateHashTable(hashTable, "names.txt");
+	for (int i = 0; i < 11; i++) {
+		PrintList(&hashTable[i], i);
+	}
 
-	return 0;
+	do{ 
+		printf("\n\r\tIzaberite broj ispred akcije koju zelite izvrsiti: \r\n1 - ispis maticnog broja osobe\r\n0 - izlaz iz aplikacije\r\n\t");
+		scanf("%d", &choice);
+		switch (choice)
+		{
+		case 1:
+			PrintId(hashTable);
+			break;
+		default:
+			break;
+		}
+	} while (choice != 0);
+
+	return EXIT_SUCCESS;
 }
 
 int CalculateHashIndex(char* surname) {
 	int letterSum = 0;
-	int n;
+	int n = 0;
 	char c;
 
-	for (int i = 0; i != 5; i++) {
+	for (int i = 0; i < 5; i++) {
 		if (sscanf(surname, "%c%n", &c, &n)) {
 			letterSum += (int)c;
 			surname += n;
@@ -70,6 +94,7 @@ Position CreateNode(char* name, char* surname) {
 	strcpy(el->name, name);
 	strcpy(el->surname, surname);
 	el->id = RandomNumber();
+	el->next = NULL;
 	return el;
 }
 
@@ -95,6 +120,10 @@ void CreateSortedList(Position what, Position where) {
 		AddToList(what, where);
 		return;
 	}
+	if (NULL == where->next) {
+		AddToList(what, where);
+		return;
+	}
 
 	while (where->next != NULL) {
 		where = where->next;
@@ -106,6 +135,10 @@ void CreateSortedList(Position what, Position where) {
 			while (strcmp(where->surname, what->surname) == 0) {
 				if (strcmp(where->name, what->name) > 0) {
 					AddToList(what, Previous(head, where));
+					return;
+				}
+				else if (strcmp(where->name, what->name) < 0 && where->next == NULL) {
+					AddToList(what, where);
 					return;
 				}
 				else if (strcmp(where->name, what->name) < 0 && strcmp(where->next->name, what->name) > 0) {
@@ -148,15 +181,28 @@ Position Previous(Position head, Position what) {
 
 void CreateHashTable(Position hashTable, char* filename) {
 	Position person = NULL;
-	int buffCount = 0;
+	int buffLength = 0;
 	int index = 0;
 	int counter = 0;
 	char* buff = NULL;
-	buff = ReadFromFile(filename);
-	buffCount = (unsigned)strlen(buff);
+	char* temp;
 
-	while (counter != buffCount) {
-		person = FromTextToPerson(buff, &counter);
+	if (temp = ReadFromFile(filename)) {
+		buffLength = (unsigned)strlen(temp);
+		buff = (char*)malloc(buffLength * sizeof(char));
+		if (NULL == buff) {
+			puts("buff allocation failed!");
+			return;
+		}
+		strcpy(buff, temp);
+	}
+	if (NULL == buff) {
+		puts("buff allocation failed!");
+		return;
+	}
+
+	while (counter != buffLength) {
+		person = FromTextToPerson(buff + counter, &counter, &buffLength);
 		index = CalculateHashIndex(person->surname);
 		CreateSortedList(person, hashTable + index);
 	}
@@ -166,36 +212,75 @@ char* ReadFromFile(char* filename) {
 	char* buff = NULL;
 	char* temp = NULL;
 	FILE* fp = NULL;
-	
-	temp = (char*)malloc(5000 * sizeof(char));
+
+	buff = (char*)malloc(5000 * sizeof(char));
+	if (NULL == buff) {
+		puts("buff allocation failed!");
+		return NULL;
+	}
+	temp = (char*)malloc(1000 * sizeof(char));
+	if (NULL == temp) {
+		puts("temp allocation failed!");
+		return NULL;
+	}
 	fp = fopen(filename, "r");
 	if (NULL == fp) {
 		puts("Cant open file!");
 		return NULL;
 	}
-	
+	if (fgets(temp, 100, fp)) {
+		strcpy(buff, temp);
+	}
 	while (fgets(temp, 100, fp)) {
 		strcat(buff, temp); //TUSIBURAZ
 	}
 	return buff;
 }
 
-Position FromTextToPerson(char* buff, int* counter) {
+Position FromTextToPerson(char* buff, int* counter, int* buffCounter) {
 	char* name = NULL;
 	char* surname = NULL;
-	int buffCounter = 0;
 	int n = 0;
 	Position person = NULL;
-	buffCounter = (unsigned)strlen(buff);
 
-	if (buffCounter != *counter) {
+	name = (char*)malloc(100 * sizeof(char));
+	surname = (char*)malloc(100 * sizeof(char));
+
+	if (*buffCounter != *counter) {
 		sscanf(buff, "%s%n", name, &n);
 		buff += n;
-		counter += n;
+		*counter += n;
 		sscanf(buff, "%s%n", surname, &n);
 		buff += n;
-		counter += n;
+		*counter += n;
+		person = CreateNode(name,surname);
+		return person;
 	}
-	person = CreateNode(name,surname);
-	return person;
+	return NULL;
+}
+
+void PrintList(Position pos, int index) {
+	printf("\r\n\tIndex - %d", index);
+	while (pos->next != NULL) {
+		pos = pos->next;
+		printf("\r\n\t%s %s", pos->name, pos->surname);
+	}
+}
+
+void PrintId(Position hashTable) {
+	int index;
+	char* surname = NULL;
+	char* name = NULL;
+	name = Input("\n\rUnesite ime osobe za koju zelite znati maticni broj: ");
+	surname = Input("\n\rUnesite prezime osobe za koju zelite znati maticni broj: ");
+	index = CalculateHashIndex(surname);
+	PrintIdPersonFromList(hashTable + index, index, name, surname);
+}
+
+void PrintIdPersonFromList(Position pos, int index, char* name, char* surname) {
+	printf("\n\rIndex: %d", index);
+	while ((strcmp(pos->surname, surname) != 0) && (strcmp(pos->name, name) !=0)) {
+		pos = pos->next;
+	}
+	printf("\n\r%s %s (maticni broj) - %d", pos->name, pos->surname, pos->id);
 }
