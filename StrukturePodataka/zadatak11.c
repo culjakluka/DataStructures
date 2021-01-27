@@ -22,7 +22,11 @@ Position CreateNode();
 int RandomNumber();
 char* Input(char*);
 void CreateSortedList(Position, Position);
-Position Previous(Position);
+void AddToList(Position, Position);
+Position Previous(Position, Position);
+void CreateHashTable(Position, char*);
+char* ReadFromFile(char*);
+Position FromTextToPerson(char*, int*);
 
 int main() {
 	Position hashTable = NULL;
@@ -35,6 +39,8 @@ int main() {
 		strcpy(hashTable[i].surname, "");
 		hashTable[i].next = NULL;
 	}
+
+	CreateHashTable(hashTable, "names.txt");
 
 	return 0;
 }
@@ -53,7 +59,7 @@ int CalculateHashIndex(char* surname) {
 	return letterSum % 11;
 }
 
-Position CreateNode() {
+Position CreateNode(char* name, char* surname) {
 	Position el = NULL;
 	el = (Position)malloc(sizeof(List));
 	if (NULL == el) {
@@ -61,8 +67,8 @@ Position CreateNode() {
 		return NULL;
 	}
 
-	strcpy(el->name, Input("\r\nUnesite ime osobe:\t"));
-	strcpy(el->surname, Input("\r\nUnesite prezime osobe:\t"));
+	strcpy(el->name, name);
+	strcpy(el->surname, surname);
 	el->id = RandomNumber();
 	return el;
 }
@@ -74,13 +80,13 @@ int RandomNumber() {
 char* Input(char* message) {
 	char* userInput = NULL;
 	userInput = (char*)malloc(NAME_SIZE*sizeof(char));
-	printf("%s", message);
+	printf("\r\n%s", message);
 	scanf("%s", userInput);
 	return userInput;
 }
 
 void CreateSortedList(Position what, Position where) {
-	Position p = where;
+	Position head = where;
 	if (NULL == what) {
 		puts("Element empty!");
 		return;
@@ -89,13 +95,38 @@ void CreateSortedList(Position what, Position where) {
 		AddToList(what, where);
 		return;
 	}
+
 	while (where->next != NULL) {
 		where = where->next;
 		if (strcmp(where->surname, what->surname) > 0) {
-			AddToList(what, Previous(p, where));
+			AddToList(what, Previous(head, where));
 			return;
-		} 
-		//TUSIBURAZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+		}
+		else if (strcmp(where->surname, what->surname) == 0) {
+			while (strcmp(where->surname, what->surname) == 0) {
+				if (strcmp(where->name, what->name) > 0) {
+					AddToList(what, Previous(head, where));
+					return;
+				}
+				else if (strcmp(where->name, what->name) < 0 && strcmp(where->next->name, what->name) > 0) {
+					AddToList(what, where);
+					return;
+				}
+				else if (strcmp(where->name, what->name) < 0 && where->next == NULL) {
+					AddToList(what, where);
+					return;
+				}
+				where = where->next;
+			}
+		}
+		else if (strcmp(where->surname, what->surname) < 0 && strcmp(where->next->surname, what->surname) > 0) {
+			AddToList(what, where);
+			return;
+		}
+		else if (strcmp(where->surname, what->surname) < 0 && where->next == NULL) {
+			AddToList(what, where);
+			return;
+		}
 	}
 }
 
@@ -105,8 +136,66 @@ void AddToList(Position what, Position where) {
 }
 
 Position Previous(Position head, Position what) {
+	if (NULL == head) {
+		puts("List sent is NULL!");
+		return NULL;
+	}
 	while (head->next != what) {
 		head = head->next;
 	}
 	return head;
+}
+
+void CreateHashTable(Position hashTable, char* filename) {
+	Position person = NULL;
+	int buffCount = 0;
+	int index = 0;
+	int counter = 0;
+	char* buff = NULL;
+	buff = ReadFromFile(filename);
+	buffCount = (unsigned)strlen(buff);
+
+	while (counter != buffCount) {
+		person = FromTextToPerson(buff, &counter);
+		index = CalculateHashIndex(person->surname);
+		CreateSortedList(person, hashTable + index);
+	}
+}
+
+char* ReadFromFile(char* filename) {
+	char* buff = NULL;
+	char* temp = NULL;
+	FILE* fp = NULL;
+	
+	temp = (char*)malloc(5000 * sizeof(char));
+	fp = fopen(filename, "r");
+	if (NULL == fp) {
+		puts("Cant open file!");
+		return NULL;
+	}
+	
+	while (fgets(temp, 100, fp)) {
+		strcat(buff, temp); //TUSIBURAZ
+	}
+	return buff;
+}
+
+Position FromTextToPerson(char* buff, int* counter) {
+	char* name = NULL;
+	char* surname = NULL;
+	int buffCounter = 0;
+	int n = 0;
+	Position person = NULL;
+	buffCounter = (unsigned)strlen(buff);
+
+	if (buffCounter != *counter) {
+		sscanf(buff, "%s%n", name, &n);
+		buff += n;
+		counter += n;
+		sscanf(buff, "%s%n", surname, &n);
+		buff += n;
+		counter += n;
+	}
+	person = CreateNode(name,surname);
+	return person;
 }
