@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+	#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,7 +11,7 @@ struct Student {
 };
 
 int countStudents(char*, int*);
-int allocateStudents(student**, int);
+student* allocateStudents(int);
 int readFromFile(char*, student*, int);
 int findMax(student*, int*, int);
 int outputStudents(student*, int, int);
@@ -26,15 +26,11 @@ int main() {
 		return -1;
 	}
 
-	st = (student*)malloc(numStud * sizeof(student));
+	st = allocateStudents(numStud);
 	if (!st) {
 		printf("malloc error\r\n");
 		return -1;
 	}
-	/*if (!allocateMemory(&st, numStud)) {
-		printf("\nallocateMemory error");
-		return -1;
-	}*/
 
 	if (!readFromFile("studenti.txt", st, numStud)) {
 		printf("\nreadFromFile error");
@@ -74,10 +70,8 @@ int countStudents(char* fileName,int *n) {
 	return 1;
 }
 
-int allocateStudents(student** st, int numStud) { //This function sucks
-	*st = (student*)malloc(numStud * sizeof(student*)); 
-	if (st == NULL) return 0;
-	return 1;
+student* allocateStudents(int numStud) {
+	return (student*)malloc(numStud * sizeof(student));
 }
 
 int readFromFile(char* fileName, student* stArr, int n) {

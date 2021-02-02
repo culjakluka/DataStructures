@@ -55,14 +55,15 @@ int main() {
 
 	do{ 
 		printf("\n\r\tIzaberite broj ispred akcije koju zelite izvrsiti: \r\n1 - ispis maticnog broja osobe\r\n0 - izlaz iz aplikacije\r\n\t");
-		scanf("%d", &choice);
-		switch (choice)
-		{
-		case 1:
-			PrintId(hashTable);
-			break;
-		default:
-			break;
+		if (scanf("%d", &choice)) {
+			switch (choice)
+			{
+			case 1:
+				PrintId(hashTable);
+				break;
+			default:
+				break;
+			}
 		}
 	} while (choice != 0);
 
@@ -105,9 +106,13 @@ int RandomNumber() {
 char* Input(char* message) {
 	char* userInput = NULL;
 	userInput = (char*)malloc(NAME_SIZE*sizeof(char));
+
 	printf("\r\n%s", message);
-	scanf("%s", userInput);
-	return userInput;
+	if (scanf("%s", userInput)) {
+		return userInput;
+	}
+	puts("Krivi unos!");
+	return NULL;
 }
 
 void CreateSortedList(Position what, Position where) {
@@ -247,12 +252,14 @@ Position FromTextToPerson(char* buff, int* counter, int* buffCounter) {
 	surname = (char*)malloc(100 * sizeof(char));
 
 	if (*buffCounter != *counter) {
-		sscanf(buff, "%s%n", name, &n);
-		buff += n;
-		*counter += n;
-		sscanf(buff, "%s%n", surname, &n);
-		buff += n;
-		*counter += n;
+		if (sscanf(buff, "%s%n", name, &n)) {
+			buff += n;
+			*counter += n;
+		}
+		if (sscanf(buff, "%s%n", surname, &n)){
+			buff += n;
+			*counter += n;
+		}
 		person = CreateNode(name,surname);
 		return person;
 	}
@@ -271,6 +278,7 @@ void PrintId(Position hashTable) {
 	int index;
 	char* surname = NULL;
 	char* name = NULL;
+
 	name = Input("\n\rUnesite ime osobe za koju zelite znati maticni broj: ");
 	surname = Input("\n\rUnesite prezime osobe za koju zelite znati maticni broj: ");
 	index = CalculateHashIndex(surname);
