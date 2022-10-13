@@ -23,7 +23,7 @@ void insertStart(Position head, Position what);
 void insertEnd(Position head, Position what);
 void insertBefore(Position head, Position what, char* lastName);
 void printList(Position from);
-Position findElement(Position head);
+Position findElement(Position head, char* lastName);
 Position findLastElement(Position head);
 Position findPreviousElement(Position pos, char* lastName);
 Position findSmaller(Position pos, Position what);
@@ -105,31 +105,32 @@ Position createSortedList(Position el, Position head) {
 	Position pos = head;
 	if (NULL == el) {
 		puts("Element sent points to NULL!");
-		return;
+		return NULL;
 	}
 	if (NULL == pos->next) {
 		insertAfter(pos, el);
-		return;
+		return NULL;
 	}
 	pos = pos->next;
 	for (pos; pos != NULL; pos = pos->next) {
 		if (NULL == pos->next) {
 			if (strcmp(pos->lastName, el->lastName) > 0) {
 				insertAfter(findPreviousElement(head, pos->lastName), el);
-				return;
+				return NULL;
 			}
 			insertAfter(pos, el);
-			return;
+			return NULL;
 		}
 		if (strcmp(pos->lastName, el->lastName) == 0) {
 			insertAfter(pos, el);
-			return;
+			return NULL;
 		}
 		if (strcmp(pos->lastName, el->lastName) < 0 && strcmp(el->lastName, pos->next->lastName) < 0) {
 			insertAfter(pos, el);
-			return;
+			return NULL;
 		}
 	}
+	return NULL;
 }
 
 void insertAfter(Position where, Position what) {
@@ -202,7 +203,7 @@ void deleteElement(Position pos, char* lastName) {
 
 void listToFile(Position head) {
 	FILE* fp = NULL;
-	fp = fopen("students.txt", 'w');
+	fp = fopen("students.txt", "w");
 	if (NULL == fp) {
 		puts("\r\nFile opening failed!");
 		return;
@@ -219,13 +220,13 @@ Position fileToList(Position head, char* fileName) {
 	int yearOfBirth = 0;
 	Position el = NULL;
 	FILE* fp = NULL;
-	fp = fopen(fileName, 'r');
+	fp = fopen(fileName, "r");
 	if (NULL == fp) {
 		puts("\r\nFile opening failed!");
-		return;
+		return NULL;
 	}
 	while (!feof(fp)) {
-		fscanf(fp, " %s %s %d", firstName, lastName, yearOfBirth);
+		fscanf(fp, " %s %s %d", firstName, lastName, &yearOfBirth);
 		el = createStudent(firstName, lastName, yearOfBirth);
 		createSortedList(head, el);
 	}
